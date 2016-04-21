@@ -4,7 +4,7 @@
 
 wait_msg(OpponentPID) ->
    receive
-      {send_message, Msg} ->
+      {sendmsg, Msg} ->
           OpponentPID ! {message, Msg};
       {message, Msg} ->
           io:format("Message received: ~w~n", [Msg])
@@ -17,27 +17,27 @@ wait_opponent() ->
    receive
        {connect, PlayerY_PID} ->
           PlayerY_PID ! {gamestart, self()},
-          io:format("Player Y joined~n", [])
-   end,
-   wait_msg(PlayerY_PID).
+	   io:format("Player Y joined~n", []),
+	   wait_msg(PlayerY_PID)
+   end.
 
 %PlayerY trying to connect to X
 connect_opponent(XNode) ->
-   {playerX, XNode} ! {connect, self()},
+   {player, XNode} ! {connect, self()},
    receive
 	{gamestart, PlayerX_PID} ->
-	  io:format("Player X says to start the game~n", [])
-   end,
-   wait_msg(PlayerX_PID).
+	   io:format("Player X says to start the game~n", []),
+	   wait_msg(PlayerX_PID)
+   end.
 
 tell(Message) ->
-  {self()} ! {send_message, Message}.
+  {player, node()} ! {sendmsg, Message}.
 
 % starts a new game node and waits for an opponent
 newgame()->
-   register(playerX, spawn(t3, wait_opponent, [])).  
+   register(player, spawn(t3, wait_opponent, [])).  
 
 %connects to another Erlang node identified by Opponent and starts a new game.
 playwith(XNode)->
-   spawn(t3, connect_opponent, [XNode]).
+   register(player, spawn(t3, connect_opponent, [XNode])).
    
