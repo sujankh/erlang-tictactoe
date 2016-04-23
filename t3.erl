@@ -5,18 +5,26 @@
 %Wait to receive the message from the opponent
 wait_msg(YourSym, HisSym, Board, OpponentPID) ->
    receive
+       %This is called by the owner node
+       %The process then forwards the message to the opponent
       {sendmsg, Msg} ->
 	   UpdatedBoard = Board,
           OpponentPID ! {message, Msg};
+
+       %A new message has arrived from the opponent
       {message, Msg} ->
 	   UpdatedBoard = Board,
 	   io:format("Msg: ~w~n", [Msg]);
+       
+       %The owner node sends a move request
        {sendmove, Move} ->
 	   %update your board
 	   UpdatedBoard = update_board(YourSym, Board, Move),
 	   io:format("~w~n", [UpdatedBoard]),
 	   %send the message to opponent
 	   OpponentPID ! {newmove, Move};
+
+       %The opponent sends a new move
 	{newmove, Move} ->
 	   io:format("Move received: ~w~n", [Move]),
 	    %the opponent updates its board with his opponent's symbol
@@ -29,33 +37,10 @@ wait_msg(YourSym, HisSym, Board, OpponentPID) ->
 update_board(Who, Board, Index) ->
     setelement(Index, Board, Who).
 
-%% wait_move(Who, Board, OpponentPID) ->
-%%     receive
-%% 	{sendmove, Move} ->
-%% 	    %update your board
-%% 	    UpdatedBoard = update_board(Who, Board, Move),
-
-%% 	    %send the message to opponent
-%% 	    OpponentPID ! {newmove, Move};
-%% 	{newmove, Move} ->
-%% 	    %the opponent updates its board
-%% 	    UpdatedBoard = update_board(Who, Board, Move),
-%% 	    io:format("Move received: ~w~n", [Move])
-%%     end,
-%%     
-%%     wait_move(Who, UpdatedBoard, OpponentPID).
-
 create_empty_board()->
     {'-', '-', '-',
      '-', '-', '-',
      '-', '-', '-'}.
-
-%starts a new process that deals with boards
-%Who = x or o
-%% board_init(Who, OpponentPID) ->
-%%     Board = create_empty_board(),
-%%     wait_move(Who, Board, OpponentPID).
-%%     %P = spawn(t3, wait_move, [Board, OpponentPID]).
 
 %PlayerX waiting for PlayerY
 wait_opponent() ->
@@ -63,9 +48,8 @@ wait_opponent() ->
        {connect, PlayerY_PID} ->
 	   io:format("Another player joined.~n", []),
 	   PlayerY_PID ! {gamestart, self()},
-	   R = random:uniform(),
+	   R = random:uniform(),  %better to have a seed for random number
 	   io:format("Random = ~w~n", [R]),
-	   %Board = board_init(x, PlayerY_PID),
 
 	   if 
 	      R  > 0.5 -> 
@@ -84,7 +68,6 @@ connect_opponent(XNode) ->
    receive
 	{gamestart, PlayerX_PID} ->
 	   io:format("Connection successful.~n", []),
-	   %board_init(o, PlayerX_PID),
 	   wait_msg(o, x, create_empty_board(), PlayerX_PID)
    end.
 
