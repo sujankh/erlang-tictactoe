@@ -1,5 +1,5 @@
 -module(t3).
--export([newgame/0, playwith/1, wait_opponent/0, connect_opponent/1, wait_msg/5, tell/1, placetoken/1]).
+-export([newgame/0, playwith/1, wait_opponent/0, connect_opponent/1, wait_msg/5, tell/1, check/1, placetoken/1]).
 -export([update_board/3, create_empty_board/0]).
 
 %Wait to receive the message from the opponent
@@ -28,7 +28,7 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
              io:format("~w~n", [UpdatedBoard]),
              Winner = check(Board),
              if
-               Winner == [{victory, _}] or Winner == draw ->
+               Winner == {victory, _} or Winner == draw ->
                  io:format("~p~n", [Winner]), Turn = undefined;
                true ->
                  Turn = OpponentPID, OpponentPID ! {newmove, Move},
