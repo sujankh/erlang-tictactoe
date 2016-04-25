@@ -4,7 +4,7 @@
 
 %Wait to receive the message from the opponent
 wait_msg(YourSym, HisSym, Board, OpponentPID, 0) ->
-  io:format("Game ended ~n");
+  io:format("Game ended ~n"), stop();
 
 wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
    receive
@@ -26,12 +26,15 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
              %update your board
              UpdatedBoard = update_board(YourSym, Board, Move),
              io:format("~w~n", [UpdatedBoard]),
-             Result = check(Board),
+             {Status, Winner} = check(Board),
              if
-               Result == {victory, x} or Result == {victory, o} or Result == draw ->
-                 io:format("~p~n", [Result]), Turn = 0;
+               Status == victory ->
+                 io:format("~p won!!~n", [Winner]), Turn = 0;
+               Status == draw ->
+                 io:format("The result was a~p~n", [Winner]), Turn = 0;
                true ->
-                 Turn = OpponentPID, OpponentPID ! {newmove, Move},
+                 Turn = OpponentPID,
+                 OpponentPID ! {newmove, Move},
                  wait_msg(YourSym, HisSym, Board, OpponentPID, Turn)
              end;
              %send the message to opponent
@@ -46,10 +49,12 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
           %the opponent updates its board with his opponent's symbol
          UpdatedBoard = update_board(HisSym, Board, Move),
          io:format("~w~n", [UpdatedBoard]),
-        Result = check(Board),
+        {Status, Winner} = check(Board),
         if
-          Result == {victory, x} or Result == {victory, o} or Result == draw ->
-            io:format("~p~n", [Result]), Turn = 0;
+          Status == victory ->
+            io:format("~p won!!~n", [Winner]), Turn = 0;
+          Status == draw ->
+            io:format("The result was a~p~n", [Winner]), Turn = 0;
           true ->
             Turn = self()
         end
@@ -131,9 +136,9 @@ check(Board) ->
 			G, H, I} when A =/= undefined, B =/= undefined, C =/= undefined,
 			D =/= undefined, E =/= undefined, F =/= undefined,
 			G =/= undefined, H =/= undefined, I =/= undefined ->
-			draw;
+      {draw, undefined};
 
-		_ -> ok
+		_ -> {ok, ok}
 	end.
 
 create_empty_board()->
@@ -195,5 +200,9 @@ newgame()->
 
 %connects to another Erlang node identified by Opponent and starts a new game.
 playwith(XNode)->
-    register(player, spawn(t3, connect_opponent, [XNode])).    
+    register(player, spawn(t3, connect_opponent, [XNode])).
+
+stop() ->
+  player!{self(), reqstop},
+  unregister(player).
    
