@@ -21,7 +21,7 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
        
        %The owner node sends a move request
        {sendmove, Move} ->
-         CurrentProc = pid_to_list(self()),
+         CurrentProc = self(), io:format("self = ~p turn = ~p ~n", [CurrentProc, Turn]),
          if
            Turn == CurrentProc ->
              %update your board
@@ -34,13 +34,13 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
                Status == draw ->
                  io:format("The result was a~p~n", [Status]), Turn = [];
                true ->
-                 Turn = pid_to_list(OpponentPID),
                  OpponentPID ! {newmove, Move},
-                 wait_msg(YourSym, HisSym, Board, OpponentPID, Turn)
+                 wait_msg(YourSym, HisSym, Board, OpponentPID, OpponentPID)
              end;
              %send the message to opponent
              %OpponentPID ! {newmove, Move};
            true ->
+					   io:format("Not your turn~n"),
              wait_msg(YourSym, HisSym, Board, OpponentPID, Turn)
          end;
 
@@ -57,7 +57,8 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
           Status == draw ->
             io:format("The result was a~p~n", [Winner]), Turn = [];
           true ->
-            Turn = pid_to_list(self())
+					  SelfPID = self(),
+            wait_msg(YourSym, HisSym, Board, OpponentPID, SelfPID)
         end
    end,
    wait_msg(YourSym, HisSym, Board, OpponentPID, Turn).
@@ -65,9 +66,10 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
 %Update the Board at Index position with the player's symbol
 update_board(Who, Board, Index) ->
   Element = erlang:element(Index, Board),
-  if Element == '_' ->
-    setelement(Index, Board, Who);
-    true->
+  if 
+		Element == '_' ->
+  	  setelement(Index, Board, Who);
+  	true->
       io:format("Invalid Move")
   end.
 
