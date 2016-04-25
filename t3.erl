@@ -1,6 +1,6 @@
 -module(t3).
--export([newgame/0, playwith/1, wait_opponent/0, connect_opponent/1, wait_msg/5, tell/1, check/1, placetoken/1]).
--export([update_board/3, create_empty_board/0]).
+-export([newgame/0, playwith/1, wait_opponent/0, connect_opponent/1, wait_msg/5, tell/1, placetoken/1]).
+-export([update_board/3, create_empty_board/0, check/1]).
 
 %Wait to receive the message from the opponent
 wait_msg(YourSym, HisSym, Board, OpponentPID, 0) ->
@@ -151,7 +151,7 @@ wait_opponent() ->
    receive
        {connect, PlayerY_PID} ->
 	   io:format("Another player joined.~n", []),
-	   PlayerY_PID ! {gamestart, self()},
+	   PlayerY_PID ! {gamestart, self()}, random:seed(now()),
 	   R = rand:uniform(),  %better to have a seed for random number
 	   io:format("Random = ~w~n", [R]),
          Board = create_empty_board(),
