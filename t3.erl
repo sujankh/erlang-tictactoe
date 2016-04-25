@@ -31,7 +31,7 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
                Status == victory ->
                  io:format("~p won!!~n", [Winner]), Turn = 0;
                Status == draw ->
-                 io:format("The result was a~p~n", [Winner]), Turn = 0;
+                 io:format("The result was a~p~n", [Status]), Turn = 0;
                true ->
                  Turn = OpponentPID,
                  OpponentPID ! {newmove, Move},
@@ -63,7 +63,12 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
 
 %Update the Board at Index position with the player's symbol
 update_board(Who, Board, Index) ->
-    setelement(Index, Board, Who).
+  Element = erlang:element(Index, Board),
+  if Element == '_' ->
+    setelement(Index, Board, Who);
+    true->
+      io:format("Invalid Move")
+  end.
 
 check(Board) ->
 	case Board of
@@ -133,9 +138,9 @@ check(Board) ->
 
 		{A, B, C,
 			D, E, F,
-			G, H, I} when A =/= undefined, B =/= undefined, C =/= undefined,
-			D =/= undefined, E =/= undefined, F =/= undefined,
-			G =/= undefined, H =/= undefined, I =/= undefined ->
+			G, H, I} when A =/= '_', B =/= '_', C =/= '_',
+			D =/= '_', E =/= '_', F =/= '_',
+			G =/= '_', H =/= '_', I =/= '_' ->
       {draw, undefined};
 
 		_ -> {ok, ok}
