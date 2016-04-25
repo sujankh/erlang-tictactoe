@@ -152,7 +152,7 @@ wait_opponent() ->
        {connect, PlayerY_PID} ->
 	   io:format("Another player joined.~n", []),
 	   PlayerY_PID ! {gamestart, self()}, random:seed(now()),
-	   R = rand:uniform(),  %better to have a seed for random number
+	   R = random:uniform(),  %better to have a seed for random number
 	   io:format("Random = ~w~n", [R]),
          Board = create_empty_board(),
 
