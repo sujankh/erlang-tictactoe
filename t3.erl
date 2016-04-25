@@ -3,7 +3,7 @@
 -export([update_board/3, create_empty_board/0, check/1]).
 
 %Wait to receive the message from the opponent
-wait_msg(YourSym, HisSym, Board, OpponentPID, 0) ->
+wait_msg(YourSym, HisSym, Board, OpponentPID, []) ->
   io:format("Game ended ~n"), stop();
 
 wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
@@ -21,19 +21,20 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
        
        %The owner node sends a move request
        {sendmove, Move} ->
+         CurrentProc = pid_to_list(self()),
          if
-           Turn == self() ->
+           Turn == CurrentProc ->
              %update your board
              UpdatedBoard = update_board(YourSym, Board, Move),
              io:format("~w~n", [UpdatedBoard]),
              {Status, Winner} = check(Board),
              if
                Status == victory ->
-                 io:format("~p won!!~n", [Winner]), Turn = 0;
+                 io:format("~p won!!~n", [Winner]), Turn = [];
                Status == draw ->
-                 io:format("The result was a~p~n", [Status]), Turn = 0;
+                 io:format("The result was a~p~n", [Status]), Turn = [];
                true ->
-                 Turn = OpponentPID,
+                 Turn = pid_to_list(OpponentPID),
                  OpponentPID ! {newmove, Move},
                  wait_msg(YourSym, HisSym, Board, OpponentPID, Turn)
              end;
@@ -52,11 +53,11 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
         {Status, Winner} = check(Board),
         if
           Status == victory ->
-            io:format("~p won!!~n", [Winner]), Turn = 0;
+            io:format("~p won!!~n", [Winner]), Turn = [];
           Status == draw ->
-            io:format("The result was a~p~n", [Winner]), Turn = 0;
+            io:format("The result was a~p~n", [Winner]), Turn = [];
           true ->
-            Turn = self()
+            Turn = pid_to_list(self())
         end
    end,
    wait_msg(YourSym, HisSym, Board, OpponentPID, Turn).
