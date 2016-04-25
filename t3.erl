@@ -147,9 +147,9 @@ check(Board) ->
 	end.
 
 create_empty_board()->
-    {'-', '-', '-',
-     '-', '-', '-',
-     '-', '-', '-'}.
+    {'_', '_', '_',
+     '_', '_', '_',
+     '_', '_', '_'}.
 
 %PlayerX waiting for PlayerY
 wait_opponent() ->
