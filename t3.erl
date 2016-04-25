@@ -3,7 +3,7 @@
 -export([update_board/3, create_empty_board/0]).
 
 %Wait to receive the message from the opponent
-wait_msg(YourSym, HisSym, Board, OpponentPID, undefined) ->
+wait_msg(YourSym, HisSym, Board, OpponentPID, 0) ->
   io:format("Game ended ~n");
 
 wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
@@ -26,10 +26,10 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
              %update your board
              UpdatedBoard = update_board(YourSym, Board, Move),
              io:format("~w~n", [UpdatedBoard]),
-             Winner = check(Board),
+             Result = check(Board),
              if
-               Winner == {victory, _} or Winner == draw ->
-                 io:format("~p~n", [Winner]), Turn = undefined;
+               Result == {victory, x} or Result == {victory, o} or Result == draw ->
+                 io:format("~p~n", [Result]), Turn = 0;
                true ->
                  Turn = OpponentPID, OpponentPID ! {newmove, Move},
                  wait_msg(YourSym, HisSym, Board, OpponentPID, Turn)
@@ -46,10 +46,10 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
           %the opponent updates its board with his opponent's symbol
          UpdatedBoard = update_board(HisSym, Board, Move),
          io:format("~w~n", [UpdatedBoard]),
-          Winner = check(Board),
+        Result = check(Board),
         if
-          Winner == {victory, _} or Winner == draw ->
-            io:format("~p~n", [Winner]), Turn = undefined;
+          Result == {victory, x} or Result == {victory, o} or Result == draw ->
+            io:format("~p~n", [Result]), Turn = 0;
           true ->
             Turn = self()
         end
