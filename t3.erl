@@ -27,6 +27,8 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
              %update your board
              UpdatedBoard = update_board(YourSym, Board, Move),
              io:format("~w~n", [UpdatedBoard]),
+             %send the message to opponent
+             OpponentPID ! {newmove, Move},
              {Status, Winner} = check(Board),
              if
                Status == victory ->
@@ -34,11 +36,8 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
                Status == draw ->
                  io:format("The result was a~p~n", [Status]), Turn = [];
                true ->
-                 OpponentPID ! {newmove, Move},
                  wait_msg(YourSym, HisSym, Board, OpponentPID, OpponentPID)
              end;
-             %send the message to opponent
-             %OpponentPID ! {newmove, Move};
            true ->
 					   io:format("Not your turn~n"),
              wait_msg(YourSym, HisSym, Board, OpponentPID, Turn)
