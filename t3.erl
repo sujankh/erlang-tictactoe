@@ -28,7 +28,8 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
              io:format("~w~n", [UpdatedBoard]),
              Winner = check(Board),
              if
-
+               Winner == [{victory, _}] or Winner == draw ->
+                 io:format("~p~n", [Winner]), Turn = undefined;
                true ->
                  Turn = OpponentPID, OpponentPID ! {newmove, Move},
                  wait_msg(YourSym, HisSym, Board, OpponentPID, Turn)
@@ -158,7 +159,7 @@ wait_opponent() ->
 		   %the other player starts
 		   PlayerY_PID ! {message, 'You will start first.~n'}, Turn = PlayerY_PID
 	   end,
-         wait_msg(x, o, Board, Board, PlayerY_PID, Turn)
+         wait_msg(x, o, Board, PlayerY_PID, Turn)
 
    end.
 
@@ -169,7 +170,7 @@ connect_opponent(XNode) ->
 	{gamestart, PlayerX_PID} ->
 	   io:format("Connection successful.~n", []),
     Board = create_empty_board(),
-	   wait_msg(o, x, Board, Board, PlayerX_PID)
+	   wait_msg(o, x, Board, PlayerX_PID, self())
    end.
 
 %validates that Coordinate is a valid move and places a new token at Coordinate
