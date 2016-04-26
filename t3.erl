@@ -33,9 +33,11 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
 		    {Status, Winner} = check(UpdatedBoard),
 		    if
 			Status == victory ->
-			    io:format("~p won!!~n", [Winner]), Turn = [];
+			    io:format("~p won!!~n", [Winner]), NTurn = [],
+        wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
 			Status == draw ->
-			    io:format("The result was a~p~n", [Status]), Turn = [];
+			    io:format("The result was a~p~n", [Status]), NTurn = [],
+        wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
 			true ->
 			    wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, OpponentPID)
 		    end;
@@ -54,10 +56,12 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
 	    {Status, Winner} = check(UpdatedBoard),
 	    if
 		Status == victory ->
-		    io:format("~p won!!~n", [Winner]), Turn = [];
-		Status == draw ->
-		    io:format("The result was a~p~n", [Winner]), Turn = [];
-		true ->
+		    io:format("~p won!!~n", [Winner]), NTurn = [],
+        wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
+        Status == draw ->
+		    io:format("The result was a~p~n", [Winner]), NTurn = [],
+          wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
+        true ->
 		    SelfPID = self(),
 		    wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, SelfPID)
 	    end
