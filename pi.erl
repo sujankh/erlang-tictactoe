@@ -66,7 +66,8 @@ randomgen(0, PIDmaster, M) ->
   PIDmaster ! {M};
 randomgen(N, PIDmaster, M) ->
   %X = random:uniform(), Y = random:uniform(),
-  X = rand:uniform(), Y = rand:uniform(),
+  random:seed(now()),
+  X = random:uniform(), Y = rand:uniform(),
   randomgen(N-1, PIDmaster, if X*X + Y*Y < 1 -> M+1; true -> M end).
 
 
