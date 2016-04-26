@@ -22,30 +22,34 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
 
 %The owner node sends a move request
 	{sendmove, Move} ->
-	    CurrentProc = self(), io:format("self = ~p turn = ~p ~n", [CurrentProc, Turn]),
+	    CurrentProc = self(),
 	    if
-		Turn == CurrentProc ->
-		    %update your board
-		    UpdatedBoard = update_board(YourSym, Board, Move),
-		    io:format("~w~n", [UpdatedBoard]),
-						%send the message to opponent
-		    OpponentPID ! {newmove, Move},
-		    {Status, Winner} = check(UpdatedBoard),
-		    if
-			Status == victory ->
-			    io:format("~p won!!~n", [Winner]), NTurn = [],
-        wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
-			Status == draw ->
-			    io:format("The result was a~p~n", [Status]), NTurn = [],
-        wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
-			true ->
-			    wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, OpponentPID)
-		    end;
-		true ->
-		    io:format("Not your turn~n"),
-		    UpdatedBoard = Board,
-		    wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, Turn)
-	    end;
+		    Turn == CurrentProc ->
+          %update your board
+          UpdatedBoard = update_board(YourSym, Board, Move),
+          io:format("~w~n", [UpdatedBoard]),
+          if
+            UpdatedBoard == Board ->
+              wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, Turn);
+            true ->
+              %send the message to opponent
+              OpponentPID ! {newmove, Move},
+              {Status, Winner} = check(UpdatedBoard),
+              if
+                Status == victory ->
+                  io:format("~p won!!~n", [Winner]), NTurn = [];
+                Status == draw ->
+                  io:format("The result was a~p~n", [Status]), NTurn = [];
+                true ->
+                  wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, OpponentPID)
+              end,
+              wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn)
+            end;
+      true ->
+        io:format("Not your turn~n"),
+        UpdatedBoard = Board,
+        wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, Turn)
+      end;
 
 	%The opponent sends a new move
 	{newmove, Move} ->
