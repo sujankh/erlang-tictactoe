@@ -37,13 +37,14 @@ wait_msg(YourSym, HisSym, Board, OpponentPID, Turn) ->
               {Status, Winner} = check(UpdatedBoard),
               if
                 Status == victory ->
-                  io:format("~p won!!~n", [Winner]), NTurn = [];
+                  io:format("~p won!!~n", [Winner]), NTurn = [],
+                  wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
                 Status == draw ->
-                  io:format("The result was a~p~n", [Status]), NTurn = [];
+                  io:format("The result was a~p~n", [Status]), NTurn = [],
+                  wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn);
                 true ->
                   wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, OpponentPID)
-              end,
-              wait_msg(YourSym, HisSym, UpdatedBoard, OpponentPID, NTurn)
+              end
             end;
       true ->
         io:format("Not your turn~n"),
